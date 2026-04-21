@@ -1,4 +1,6 @@
 package com.gaurav.orderbook.model;
 
-public class Side {
+public enum Side {
+    BUY,
+    SELL
 }
