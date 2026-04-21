@@ -3,9 +3,7 @@ package com.gaurav.orderbook.engine;
 import com.gaurav.orderbook.model.*;
 import com.gaurav.orderbook.util.IdGenerator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class MatchingEngine {
 
@@ -34,13 +32,13 @@ public class MatchingEngine {
                 && buyOrder.getQuantity() > 0
                 && buyOrder.getPrice() >= orderBook.getAsks().firstKey()) {
 
-            double bestPrice = orderBook.getAsks().firstKey();
-            Queue<Order> queue = orderBook.getAsks().get(bestPrice);
+            double price = orderBook.getAsks().firstKey();
+            Queue<Order> queue = orderBook.getAsks().get(price);
             Order sellOrder = queue.peek();
 
             int qty = Math.min(buyOrder.getQuantity(), sellOrder.getQuantity());
 
-            trades.add(createTrade(buyOrder, sellOrder, bestPrice, qty));
+            trades.add(createTrade(buyOrder, sellOrder, price, qty));
 
             buyOrder.setQuantity(buyOrder.getQuantity() - qty);
             sellOrder.setQuantity(sellOrder.getQuantity() - qty);
@@ -48,7 +46,7 @@ public class MatchingEngine {
             if (sellOrder.getQuantity() == 0) {
                 queue.poll();
                 if (queue.isEmpty()) {
-                    orderBook.getAsks().remove(bestPrice);
+                    orderBook.getAsks().remove(price);
                 }
             }
         }
@@ -60,13 +58,13 @@ public class MatchingEngine {
                 && sellOrder.getQuantity() > 0
                 && sellOrder.getPrice() <= orderBook.getBids().firstKey()) {
 
-            double bestPrice = orderBook.getBids().firstKey();
-            Queue<Order> queue = orderBook.getBids().get(bestPrice);
+            double price = orderBook.getBids().firstKey();
+            Queue<Order> queue = orderBook.getBids().get(price);
             Order buyOrder = queue.peek();
 
             int qty = Math.min(sellOrder.getQuantity(), buyOrder.getQuantity());
 
-            trades.add(createTrade(buyOrder, sellOrder, bestPrice, qty));
+            trades.add(createTrade(buyOrder, sellOrder, price, qty));
 
             sellOrder.setQuantity(sellOrder.getQuantity() - qty);
             buyOrder.setQuantity(buyOrder.getQuantity() - qty);
@@ -74,7 +72,7 @@ public class MatchingEngine {
             if (buyOrder.getQuantity() == 0) {
                 queue.poll();
                 if (queue.isEmpty()) {
-                    orderBook.getBids().remove(bestPrice);
+                    orderBook.getBids().remove(price);
                 }
             }
         }
@@ -82,14 +80,14 @@ public class MatchingEngine {
 
     private Trade createTrade(Order buy, Order sell, double price, int qty) {
 
-        Trade t = new Trade();
-        t.setTradeId(IdGenerator.generateId());
-        t.setBuyOrderId(buy.getId());
-        t.setSellOrderId(sell.getId());
-        t.setPrice(price);
-        t.setQuantity(qty);
-        t.setTimestamp(System.currentTimeMillis());
+        Trade trade = new Trade();
+        trade.setTradeId(IdGenerator.generateId());
+        trade.setBuyOrderId(buy.getId());
+        trade.setSellOrderId(sell.getId());
+        trade.setPrice(price);
+        trade.setQuantity(qty);
+        trade.setTimestamp(System.currentTimeMillis());
 
-        return t;
+        return trade;
     }
 }
