@@ -3,7 +3,8 @@ package com.gaurav.orderbook.engine;
 import com.gaurav.orderbook.model.*;
 import com.gaurav.orderbook.util.IdGenerator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MatchingEngine {
 
@@ -33,7 +34,7 @@ public class MatchingEngine {
                 && buyOrder.getPrice() >= orderBook.getAsks().firstKey()) {
 
             double price = orderBook.getAsks().firstKey();
-            Queue<Order> queue = orderBook.getAsks().get(price);
+            OrderQueue queue = orderBook.getAsks().get(price);
             Order sellOrder = queue.peek();
 
             int qty = Math.min(buyOrder.getQuantity(), sellOrder.getQuantity());
@@ -43,11 +44,10 @@ public class MatchingEngine {
             buyOrder.setQuantity(buyOrder.getQuantity() - qty);
             sellOrder.setQuantity(sellOrder.getQuantity() - qty);
 
-            if (sellOrder.getQuantity() == 0) {
-                queue.poll();
-                if (queue.isEmpty()) {
-                    orderBook.getAsks().remove(price);
-                }
+            queue.removeIfFilled();
+
+            if (queue.isEmpty()) {
+                orderBook.getAsks().remove(price);
             }
         }
     }
@@ -59,7 +59,7 @@ public class MatchingEngine {
                 && sellOrder.getPrice() <= orderBook.getBids().firstKey()) {
 
             double price = orderBook.getBids().firstKey();
-            Queue<Order> queue = orderBook.getBids().get(price);
+            OrderQueue queue = orderBook.getBids().get(price);
             Order buyOrder = queue.peek();
 
             int qty = Math.min(sellOrder.getQuantity(), buyOrder.getQuantity());
@@ -69,11 +69,10 @@ public class MatchingEngine {
             sellOrder.setQuantity(sellOrder.getQuantity() - qty);
             buyOrder.setQuantity(buyOrder.getQuantity() - qty);
 
-            if (buyOrder.getQuantity() == 0) {
-                queue.poll();
-                if (queue.isEmpty()) {
-                    orderBook.getBids().remove(price);
-                }
+            queue.removeIfFilled();
+
+            if (queue.isEmpty()) {
+                orderBook.getBids().remove(price);
             }
         }
     }
