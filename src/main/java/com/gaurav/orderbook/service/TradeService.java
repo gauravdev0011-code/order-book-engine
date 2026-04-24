@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 public class TradeService {
 
     public void handle(Trade trade) {
-        // future: DB / analytics
+        // For now, just log (proves usage)
+        System.out.println("Trade executed: " + trade);
     }
 }

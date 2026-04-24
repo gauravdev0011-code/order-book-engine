@@ -13,9 +13,11 @@ public class OrderService {
 
     private final MatchingEngine engine = new MatchingEngine();
     private final TradePublisher publisher;
+    private final TradeService tradeService;
 
-    public OrderService(TradePublisher publisher) {
+    public OrderService(TradePublisher publisher, TradeService tradeService) {
         this.publisher = publisher;
+        this.tradeService = tradeService;
     }
 
     public List<Trade> process(Order order) {
@@ -23,7 +25,8 @@ public class OrderService {
         List<Trade> trades = engine.processOrder(order);
 
         for (Trade trade : trades) {
-            publisher.publish(trade);
+            tradeService.handle(trade);   // ✅ now used
+            publisher.publish(trade);     // ✅ real-time
         }
 
         return trades;
