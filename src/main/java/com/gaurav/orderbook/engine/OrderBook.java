@@ -2,25 +2,15 @@ package com.gaurav.orderbook.engine;
 
 import com.gaurav.orderbook.model.Order;
 import com.gaurav.orderbook.model.Side;
+import lombok.Getter;
 
-import java.util.Collections;
 import java.util.TreeMap;
 
+@Getter
 public class OrderBook {
 
-    private final TreeMap<Double, OrderQueue> bids =
-            new TreeMap<>(Collections.reverseOrder());
-
-    private final TreeMap<Double, OrderQueue> asks =
-            new TreeMap<>();
-
-    public TreeMap<Double, OrderQueue> getBids() {
-        return bids;
-    }
-
-    public TreeMap<Double, OrderQueue> getAsks() {
-        return asks;
-    }
+    private final TreeMap<Double, OrderQueue> bids = new TreeMap<>((a, b) -> Double.compare(b, a)); // max heap
+    private final TreeMap<Double, OrderQueue> asks = new TreeMap<>(); // min heap
 
     public void addOrder(Order order) {
 
