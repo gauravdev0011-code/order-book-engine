@@ -9,19 +9,12 @@ public class OrderQueue {
 
     private final Queue<Order> queue = new LinkedList<>();
 
-    // Add order (time priority preserved)
     public void add(Order order) {
         queue.add(order);
     }
 
-    // Get top order without removing
     public Order peek() {
         return queue.peek();
-    }
-
-    // Remove top order
-    public void removeTop() {
-        queue.poll();
     }
 
     // Clean up filled orders automatically
