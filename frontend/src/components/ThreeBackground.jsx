@@ -1,15 +1,16 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";
 import { useRef } from "react";
-import * as THREE from "three";
 
 function Particles() {
     const ref = useRef();
 
-    const particles = new Float32Array(5000 * 3).map(() => (Math.random() - 0.5) * 20);
+    const particles = new Float32Array(2000 * 3).map(
+        () => (Math.random() - 0.5) * 15
+    );
 
     useFrame(() => {
-        ref.current.rotation.y += 0.0008;
+        ref.current.rotation.y += 0.0005;
     });
 
     return (
@@ -19,37 +20,30 @@ function Particles() {
     );
 }
 
-function WireSphere() {
-    const meshRef = useRef();
+function Sphere() {
+    const ref = useRef();
 
     useFrame(() => {
-        meshRef.current.rotation.y += 0.003;
+        ref.current.rotation.y += 0.002;
     });
 
     return (
-        <mesh ref={meshRef}>
+        <mesh ref={ref}>
             <sphereGeometry args={[2, 32, 32]} />
             <meshStandardMaterial wireframe color="#00ffff" />
         </mesh>
     );
 }
 
-function Grid() {
-    return (
-        <gridHelper args={[50, 50, "#00ffff", "#004444"]} />
-    );
-}
-
 export default function ThreeBackground() {
     return (
-        <div className="fixed top-0 left-0 w-full h-full -z-10">
+        <div style={{ position: "fixed", inset: 0, zIndex: -1 }}>
             <Canvas camera={{ position: [0, 2, 6] }}>
-                <ambientLight intensity={0.4} />
+                <ambientLight intensity={0.5} />
                 <pointLight position={[5, 5, 5]} />
 
                 <Particles />
-                <WireSphere />
-                <Grid />
+                <Sphere />
             </Canvas>
         </div>
     );
