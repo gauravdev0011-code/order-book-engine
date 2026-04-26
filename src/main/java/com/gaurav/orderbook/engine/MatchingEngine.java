@@ -3,8 +3,7 @@ package com.gaurav.orderbook.engine;
 import com.gaurav.orderbook.model.*;
 import com.gaurav.orderbook.util.IdGenerator;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MatchingEngine {
 
@@ -15,9 +14,9 @@ public class MatchingEngine {
         List<Trade> trades = new ArrayList<>();
 
         if (incomingOrder.getSide() == Side.BUY) {
-            matchBuy(incomingOrder, trades);
+            match(incomingOrder, orderBook.getAsks(), true, trades);
         } else {
-            matchSell(incomingOrder, trades);
+            match(incomingOrder, orderBook.getBids(), false, trades);
         }
 
         if (incomingOrder.getQuantity() > 0) {
@@ -27,52 +26,39 @@ public class MatchingEngine {
         return trades;
     }
 
-    private void matchBuy(Order buyOrder, List<Trade> trades) {
+    private void match(Order incoming,
+                       TreeMap<Double, OrderQueue> book,
+                       boolean isBuy,
+                       List<Trade> trades) {
 
-        while (!orderBook.getAsks().isEmpty()
-                && buyOrder.getQuantity() > 0
-                && buyOrder.getPrice() >= orderBook.getAsks().firstKey()) {
+        while (!book.isEmpty() && incoming.getQuantity() > 0) {
 
-            double price = orderBook.getAsks().firstKey();
-            OrderQueue queue = orderBook.getAsks().get(price);
-            Order sellOrder = queue.peek();
+            double bestPrice = book.firstKey();
 
-            int qty = Math.min(buyOrder.getQuantity(), sellOrder.getQuantity());
-
-            trades.add(createTrade(buyOrder, sellOrder, price, qty));
-
-            buyOrder.setQuantity(buyOrder.getQuantity() - qty);
-            sellOrder.setQuantity(sellOrder.getQuantity() - qty);
-
-            queue.removeIfFilled();
-
-            if (queue.isEmpty()) {
-                orderBook.getAsks().remove(price);
+            // price condition
+            if ((isBuy && incoming.getPrice() < bestPrice) ||
+                    (!isBuy && incoming.getPrice() > bestPrice)) {
+                break;
             }
-        }
-    }
 
-    private void matchSell(Order sellOrder, List<Trade> trades) {
+            OrderQueue queue = book.get(bestPrice);
+            Order opposite = queue.peek();
 
-        while (!orderBook.getBids().isEmpty()
-                && sellOrder.getQuantity() > 0
-                && sellOrder.getPrice() <= orderBook.getBids().firstKey()) {
+            int qty = Math.min(incoming.getQuantity(), opposite.getQuantity());
 
-            double price = orderBook.getBids().firstKey();
-            OrderQueue queue = orderBook.getBids().get(price);
-            Order buyOrder = queue.peek();
+            if (isBuy) {
+                trades.add(createTrade(incoming, opposite, bestPrice, qty));
+            } else {
+                trades.add(createTrade(opposite, incoming, bestPrice, qty));
+            }
 
-            int qty = Math.min(sellOrder.getQuantity(), buyOrder.getQuantity());
-
-            trades.add(createTrade(buyOrder, sellOrder, price, qty));
-
-            sellOrder.setQuantity(sellOrder.getQuantity() - qty);
-            buyOrder.setQuantity(buyOrder.getQuantity() - qty);
+            incoming.setQuantity(incoming.getQuantity() - qty);
+            opposite.setQuantity(opposite.getQuantity() - qty);
 
             queue.removeIfFilled();
 
             if (queue.isEmpty()) {
-                orderBook.getBids().remove(price);
+                book.remove(bestPrice);
             }
         }
     }
