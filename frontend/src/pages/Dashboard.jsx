@@ -6,12 +6,12 @@ import PriceChart from "../components/PriceChart";
 
 export default function Dashboard() {
     return (
-        <div style={{ padding: "20px" }}>
+        <div className="min-h-screen text-white p-6">
             <ThreeBackground />
 
-            <h1>Order Book Engine</h1>
+            <h1 className="text-4xl font-bold mb-6">Order Book Engine</h1>
 
-            <div style={grid}>
+            <div className="grid grid-cols-4 gap-4">
                 <OrderBook />
                 <TradeFeed />
                 <OrderForm />
@@ -20,9 +20,3 @@ export default function Dashboard() {
         </div>
     );
 }
-
-const grid = {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "15px",
-};

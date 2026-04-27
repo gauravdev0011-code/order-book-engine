@@ -1,14 +1,8 @@
 export default function PriceChart() {
     return (
-        <div style={card}>
-            <h3>Price Chart</h3>
-            <p>Coming soon</p>
+        <div className="bg-black/60 p-4 rounded-xl border border-gray-700">
+            <h2 className="text-xl font-bold">Price Chart</h2>
+            <p className="text-gray-400">Coming soon</p>
         </div>
     );
 }
-
-const card = {
-    background: "#111",
-    padding: "15px",
-    borderRadius: "8px",
-};

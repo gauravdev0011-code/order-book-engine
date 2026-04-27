@@ -1,14 +1,27 @@
-export function connectWebSocket(onMessage) {
-    const socket = new WebSocket("ws://localhost:8080/ws");
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 
-    socket.onopen = () => console.log("WS connected");
+export function connectWebSocket(onTrade) {
+    const socket = new SockJS("http://localhost:8080/ws");
 
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        onMessage(data);
-    };
+    const client = new Client({
+        webSocketFactory: () => socket,
+        reconnectDelay: 5000,
 
-    socket.onerror = (err) => console.error(err);
+        onConnect: () => {
+            console.log("✅ Connected to WebSocket");
 
-    return socket;
+            client.subscribe("/topic/trades", (message) => {
+                const data = JSON.parse(message.body);
+                onTrade(data);
+            });
+        },
+
+        onStompError: (frame) => {
+            console.error("❌ STOMP error:", frame);
+        },
+    });
+
+    client.activate();
+    return client;
 }
