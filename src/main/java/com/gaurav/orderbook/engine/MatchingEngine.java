@@ -4,11 +4,11 @@ import com.gaurav.orderbook.model.*;
 import com.gaurav.orderbook.util.IdGenerator;
 import com.gaurav.orderbook.websocket.TradePublisher;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@Service
+@Component
 public class MatchingEngine {
 
     private final OrderBook orderBook = new OrderBook();
@@ -26,13 +26,9 @@ public class MatchingEngine {
             match(incomingOrder, orderBook.getBids(), false, trades);
         }
 
+        // If not fully matched → add to book
         if (incomingOrder.getQuantity() > 0) {
             orderBook.addOrder(incomingOrder);
-        }
-
-        // 🔥 CRITICAL: publish trades
-        for (Trade trade : trades) {
-            tradePublisher.publish(trade);
         }
 
         return trades;
@@ -47,7 +43,7 @@ public class MatchingEngine {
 
             double bestPrice = book.firstKey();
 
-            // price condition
+            // Stop if price condition not satisfied
             if ((isBuy && incoming.getPrice() < bestPrice) ||
                     (!isBuy && incoming.getPrice() > bestPrice)) {
                 break;
@@ -65,11 +61,15 @@ public class MatchingEngine {
                 trade = createTrade(opposite, incoming, bestPrice, qty);
             }
 
+            // Add + publish
             trades.add(trade);
+            tradePublisher.publish(trade);
 
+            // Reduce quantities
             incoming.setQuantity(incoming.getQuantity() - qty);
             opposite.setQuantity(opposite.getQuantity() - qty);
 
+            // Clean queue
             queue.removeIfFilled();
 
             if (queue.isEmpty()) {
@@ -81,6 +81,7 @@ public class MatchingEngine {
     private Trade createTrade(Order buy, Order sell, double price, int qty) {
 
         Trade trade = new Trade();
+
         trade.setTradeId(IdGenerator.generateId());
         trade.setBuyOrderId(buy.getId());
         trade.setSellOrderId(sell.getId());

@@ -9,16 +9,11 @@ export function connectWebSocket(onTrade) {
         reconnectDelay: 5000,
 
         onConnect: () => {
-            console.log("✅ Connected to WebSocket");
+            console.log("Connected");
 
-            client.subscribe("/topic/trades", (message) => {
-                const data = JSON.parse(message.body);
-                onTrade(data);
+            client.subscribe("/topic/trades", (msg) => {
+                onTrade(JSON.parse(msg.body));
             });
-        },
-
-        onStompError: (frame) => {
-            console.error("❌ STOMP error:", frame);
         },
     });
 
