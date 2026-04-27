@@ -2,12 +2,19 @@ package com.gaurav.orderbook.engine;
 
 import com.gaurav.orderbook.model.*;
 import com.gaurav.orderbook.util.IdGenerator;
+import com.gaurav.orderbook.websocket.TradePublisher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Service
 public class MatchingEngine {
 
     private final OrderBook orderBook = new OrderBook();
+
+    @Autowired
+    private TradePublisher tradePublisher;
 
     public List<Trade> processOrder(Order incomingOrder) {
 
@@ -21,6 +28,11 @@ public class MatchingEngine {
 
         if (incomingOrder.getQuantity() > 0) {
             orderBook.addOrder(incomingOrder);
+        }
+
+        // 🔥 CRITICAL: publish trades
+        for (Trade trade : trades) {
+            tradePublisher.publish(trade);
         }
 
         return trades;
@@ -46,11 +58,14 @@ public class MatchingEngine {
 
             int qty = Math.min(incoming.getQuantity(), opposite.getQuantity());
 
+            Trade trade;
             if (isBuy) {
-                trades.add(createTrade(incoming, opposite, bestPrice, qty));
+                trade = createTrade(incoming, opposite, bestPrice, qty);
             } else {
-                trades.add(createTrade(opposite, incoming, bestPrice, qty));
+                trade = createTrade(opposite, incoming, bestPrice, qty);
             }
+
+            trades.add(trade);
 
             incoming.setQuantity(incoming.getQuantity() - qty);
             opposite.setQuantity(opposite.getQuantity() - qty);
