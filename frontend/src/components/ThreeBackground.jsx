@@ -1,12 +1,15 @@
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 
-function Sphere() {
+function AnimatedSphere() {
     const ref = useRef();
 
     useFrame(() => {
-        ref.current.rotation.y += 0.0008;
+        if (ref.current) {
+            ref.current.rotation.y += 0.0008;
+        }
     });
 
     return (
@@ -28,8 +31,8 @@ export default function ThreeBackground() {
             <Canvas>
                 <ambientLight intensity={0.5} />
                 <pointLight position={[5, 5, 5]} />
-                <Sphere />
-                <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.3} />
+                <AnimatedSphere />
+                <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.2} />
             </Canvas>
         </div>
     );
