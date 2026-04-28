@@ -6,19 +6,14 @@ export function connectWebSocket(onTrade) {
 
     const client = new Client({
         webSocketFactory: () => socket,
-        reconnectDelay: 5000,
 
         onConnect: () => {
-            console.log("Connected to WebSocket");
+            console.log("Connected");
 
-            client.subscribe("/topic/trades", (message) => {
-                const trade = JSON.parse(message.body);
+            client.subscribe("/topic/trades", (msg) => {
+                const trade = JSON.parse(msg.body);
                 onTrade(trade);
             });
-        },
-
-        onStompError: (frame) => {
-            console.error("STOMP error:", frame);
         },
     });
 
