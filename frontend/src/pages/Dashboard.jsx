@@ -20,7 +20,7 @@ export default function Dashboard() {
             <ThreeBackground />
 
             <div className="relative z-10 p-6 max-w-7xl mx-auto">
-                <h1 className="text-3xl font-semibold mb-6 tracking-wide">
+                <h1 className="text-3xl font-semibold mb-6">
                     Trading Dashboard
                 </h1>
 
