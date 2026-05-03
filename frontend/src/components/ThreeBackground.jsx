@@ -1,38 +1,29 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 
-function AnimatedSphere() {
+function Sphere() {
     const ref = useRef();
 
     useFrame(() => {
-        if (ref.current) {
-            ref.current.rotation.y += 0.0008;
-        }
+        ref.current.rotation.y += 0.0006;
     });
 
     return (
         <mesh ref={ref}>
-            <sphereGeometry args={[1.2, 32, 32]} />
-            <meshStandardMaterial
-                wireframe
-                color="#00ffff"
-                emissive="#00ffff"
-                emissiveIntensity={0.5}
-            />
+            <sphereGeometry args={[1.1, 32, 32]} />
+            <meshStandardMaterial wireframe color="#00ffff" />
         </mesh>
     );
 }
 
 export default function ThreeBackground() {
     return (
-        <div className="fixed top-0 left-0 w-full h-full -z-10">
+        <div className="fixed inset-0 -z-10">
             <Canvas>
-                <ambientLight intensity={0.5} />
+                <ambientLight intensity={0.4} />
                 <pointLight position={[5, 5, 5]} />
-                <AnimatedSphere />
-                <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.2} />
+                <Sphere />
             </Canvas>
         </div>
     );
