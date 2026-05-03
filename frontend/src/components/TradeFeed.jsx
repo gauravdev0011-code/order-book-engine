@@ -5,7 +5,7 @@ export default function TradeFeed({ trades }) {
 
             <div className="text-sm max-h-72 overflow-y-auto space-y-1">
                 {trades.length === 0 && (
-                    <p className="text-gray-">Waiting for trades...</p>
+                    <p className="text-gray-400">Waiting for trades...</p>
                 )}
 
                 {trades.map((t, i) => (
