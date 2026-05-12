@@ -13,7 +13,7 @@ public class TradePublisher {
 
     private static final String TRADE_TOPIC = "/topic/trades";
 
-    private final SimpMessagingTemplate template;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /**
      * Publish executed trade to websocket subscribers
@@ -21,16 +21,17 @@ public class TradePublisher {
     public void publish(Trade trade) {
 
         if (trade == null) {
-            log.warn("Attempted to publish null trade");
+            log.warn("Skipped websocket publish because trade was null");
             return;
         }
 
         try {
 
-            template.convertAndSend(TRADE_TOPIC, trade);
+            messagingTemplate.convertAndSend(TRADE_TOPIC, trade);
 
-            log.info(
-                    "Published trade | id={} price={} quantity={}",
+            // Debug-level to avoid noisy production logs
+            log.debug(
+                    "Trade published | id={} price={} quantity={}",
                     trade.getTradeId(),
                     trade.getPrice(),
                     trade.getQuantity()
@@ -39,8 +40,9 @@ public class TradePublisher {
         } catch (Exception ex) {
 
             log.error(
-                    "Failed to publish trade | id={}",
+                    "WebSocket trade publish failed | id={} error={}",
                     trade.getTradeId(),
+                    ex.getMessage(),
                     ex
             );
         }
