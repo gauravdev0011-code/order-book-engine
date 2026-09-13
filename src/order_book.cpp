@@ -12,15 +12,17 @@ void OrderBook::validate(const Order& order) {
 
 void OrderBook::add_resting(Order order) {
     if (order.side == Side::Buy) {
-        auto [level, ignored] = bids_.try_emplace(order.price_ticks);
-        level->second.push_back(std::move(order));
-        auto it = std::prev(level->second.end());
-        index_.emplace(it->id, Location{Side::Buy, level->first, it});
+        auto result = bids_.try_emplace(order.price_ticks);
+        auto& queue = result.first->second;
+        queue.push_back(std::move(order));
+        auto it = std::prev(queue.end());
+        index_.emplace(it->id, Location{Side::Buy, result.first->first, it});
     } else {
-        auto [level, ignored] = asks_.try_emplace(order.price_ticks);
-        level->second.push_back(std::move(order));
-        auto it = std::prev(level->second.end());
-        index_.emplace(it->id, Location{Side::Sell, level->first, it});
+        auto result = asks_.try_emplace(order.price_ticks);
+        auto& queue = result.first->second;
+        queue.push_back(std::move(order));
+        auto it = std::prev(queue.end());
+        index_.emplace(it->id, Location{Side::Sell, result.first->first, it});
     }
 }
 
