@@ -12,12 +12,12 @@ void OrderBook::validate(const Order& order) {
 
 void OrderBook::add_resting(Order order) {
     if (order.side == Side::Buy) {
-        auto [level, inserted] = bids_.try_emplace(order.price_ticks);
+        auto [level, ignored] = bids_.try_emplace(order.price_ticks);
         level->second.push_back(std::move(order));
         auto it = std::prev(level->second.end());
         index_.emplace(it->id, Location{Side::Buy, level->first, it});
     } else {
-        auto [level, inserted] = asks_.try_emplace(order.price_ticks);
+        auto [level, ignored] = asks_.try_emplace(order.price_ticks);
         level->second.push_back(std::move(order));
         auto it = std::prev(level->second.end());
         index_.emplace(it->id, Location{Side::Sell, level->first, it});
@@ -26,6 +26,11 @@ void OrderBook::add_resting(Order order) {
 
 std::vector<Trade> OrderBook::process(Order incoming) {
     validate(incoming);
+
+    if (index_.contains(incoming.id)) {
+        throw std::invalid_argument("order id already exists");
+    }
+
     std::vector<Trade> trades;
 
     if (incoming.side == Side::Buy) {
@@ -36,7 +41,9 @@ std::vector<Trade> OrderBook::process(Order incoming) {
             auto& queue = level->second;
             auto resting = queue.begin();
             const auto fill = std::min(incoming.quantity, resting->quantity);
-            trades.push_back(Trade{incoming.id, resting->id, resting->price_ticks, fill});
+            trades.push_back(
+                Trade{incoming.id, resting->id, resting->price_ticks, fill}
+            );
             incoming.quantity -= fill;
             resting->quantity -= fill;
 
@@ -54,7 +61,9 @@ std::vector<Trade> OrderBook::process(Order incoming) {
             auto& queue = level->second;
             auto resting = queue.begin();
             const auto fill = std::min(incoming.quantity, resting->quantity);
-            trades.push_back(Trade{resting->id, incoming.id, resting->price_ticks, fill});
+            trades.push_back(
+                Trade{resting->id, incoming.id, resting->price_ticks, fill}
+            );
             incoming.quantity -= fill;
             resting->quantity -= fill;
 
