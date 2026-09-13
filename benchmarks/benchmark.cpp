@@ -16,7 +16,8 @@ static double percentile(std::vector<std::uint64_t>& samples, double p) {
 }
 
 int main(int argc, char** argv) {
-    const std::size_t n = argc > 1 ? std::stoull(argv[1]) : 1'000'000;
+    const std::size_t n = argc > 1 ? std::stoull(argv[1]) : 5'000'000;
+
     OrderBook book;
     std::vector<std::uint64_t> latency_ns;
     latency_ns.reserve(n);
@@ -26,23 +27,41 @@ int main(int argc, char** argv) {
     std::uniform_int_distribution<int> quantity(1, 10);
     std::bernoulli_distribution side(0.5);
 
-    // Pre-warm the book with both sides so the benchmark exercises matching and resting paths.
+    // Pre-warm both sides so the benchmark exercises matching and resting paths.
     for (std::uint64_t id = 1; id <= 2'000; ++id) {
-        book.process(Order{id, 10'000 + static_cast<int>(id % 21) - 10, 5, id % 2 ? Side::Buy : Side::Sell});
+        book.process({
+            id,
+            10'000 + static_cast<int>(id % 21) - 10,
+            5,
+            id % 2 ? Side::Buy : Side::Sell
+        });
     }
 
     const auto start = std::chrono::steady_clock::now();
     std::uint64_t trades = 0;
+
     for (std::uint64_t i = 0; i < n; ++i) {
-        const Order order{2'001 + i, price(rng), static_cast<std::uint32_t>(quantity(rng)), side(rng) ? Side::Buy : Side::Sell};
+        const Order order{
+            2'001 + i,
+            price(rng),
+            static_cast<std::uint32_t>(quantity(rng)),
+            side(rng) ? Side::Buy : Side::Sell
+        };
+
         const auto t0 = std::chrono::steady_clock::now();
         trades += book.process(order).size();
         const auto t1 = std::chrono::steady_clock::now();
-        latency_ns.push_back(static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count()));
-    }
-    const auto end = std::chrono::steady_clock::now();
 
+        latency_ns.push_back(
+            static_cast<std::uint64_t>(
+                std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count()
+            )
+        );
+    }
+
+    const auto end = std::chrono::steady_clock::now();
     const double elapsed_s = std::chrono::duration<double>(end - start).count();
+
     std::cout << std::fixed << std::setprecision(2);
     std::cout << "orders=" << n << '\n';
     std::cout << "elapsed_s=" << elapsed_s << '\n';
