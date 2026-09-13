@@ -2,12 +2,27 @@
 
 A C++20 in-memory limit-order-book matching engine implementing **price-time priority**, deterministic FIFO execution, partial fills, cancellation, and reproducible performance benchmarking.
 
-## Resume-Aligned Summary
+[![CI](https://github.com/gauravdev0011-code/order-book-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/gauravdev0011-code/order-book-engine/actions/workflows/ci.yml)
 
-- Engineered a price-time-priority matching engine with an in-memory order book using **C++ maps, linked lists, and hash maps** for deterministic matching and **O(1)-average cancellation lookup**.
-- Benchmarked **5M simulated orders** at **2.0M+ orders/sec** with **sub-0.8 µs p95 processing latency**, validating matching performance under sustained workloads.
+## What it demonstrates
 
-> Benchmark figures are the measured result reported on the resume for the corresponding benchmark environment. They are not universal hardware-independent guarantees; reproduce the benchmark on the target machine before quoting the figures elsewhere.
+- **Market-data structure design:** ordered price levels plus FIFO queues preserve price-time priority.
+- **Fast cancellation:** an `unordered_map` indexes resting orders for average O(1) ID lookup.
+- **Deterministic matching:** execution order is explicit and testable.
+- **Tail-latency measurement:** the benchmark reports p50/p95/p99 processing latency rather than throughput alone.
+- **Sustained workload:** the default benchmark processes 5M simulated orders.
+
+## Resume-Aligned Results
+
+| Metric | Result |
+|---|---:|
+| Orders benchmarked | **5,000,000** |
+| Throughput | **2.0M+ orders/sec** |
+| p95 processing latency | **<0.8 µs** |
+| Matching policy | **Price-time priority** |
+| Cancellation lookup | **O(1) average** |
+
+> Benchmark figures are measured results for the corresponding benchmark environment. They are not hardware-independent guarantees; reproduce the benchmark on the target machine before quoting the figures elsewhere.
 
 ## Core Behavior
 
@@ -87,6 +102,10 @@ Matching work is proportional to the price levels and resting orders actually tr
 ## Engineering Focus
 
 This project demonstrates data-structure selection, deterministic matching semantics, memory ownership, iterator stability, and measurement of throughput and tail latency under sustained workloads.
+
+## CI
+
+GitHub Actions configures a Release build and runs the complete CTest suite on every push and pull request.
 
 ## Author
 
