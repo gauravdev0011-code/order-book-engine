@@ -1,6 +1,8 @@
 #include "orderbook/order_book.hpp"
+
 #include <cassert>
 #include <iostream>
+#include <stdexcept>
 
 int main() {
     {
@@ -40,6 +42,18 @@ int main() {
         assert(trades.size() == 1);
         assert(trades[0].price_ticks == 10000);
         assert(book.order_count() == 0);
+    }
+    {
+        OrderBook book;
+        book.process({1, 10000, 5, Side::Buy});
+        bool rejected = false;
+        try {
+            book.process({1, 10100, 5, Side::Buy});
+        } catch (const std::invalid_argument&) {
+            rejected = true;
+        }
+        assert(rejected);
+        assert(book.order_count() == 1);
     }
     std::cout << "All order-book tests passed.\n";
 }
