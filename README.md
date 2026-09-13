@@ -1,20 +1,28 @@
-# C++20 Low-Latency Order Book & Matching Engine
+# Order Book — Low-Latency Matching Engine
 
-A deterministic in-memory limit-order-book matching engine implementing **price-time priority**, partial fills, cancellation, and reproducible performance benchmarking.
+A C++20 in-memory limit-order-book matching engine implementing **price-time priority**, deterministic FIFO execution, partial fills, cancellation, and reproducible performance benchmarking.
 
-## Resume-Aligned Capabilities
+## Resume-Aligned Summary
 
-- C++20 / CMake build
-- Price-time-priority matching for BUY and SELL limit orders
+- Engineered a price-time-priority matching engine with an in-memory order book using **C++ maps, linked lists, and hash maps** for deterministic matching and **O(1)-average cancellation lookup**.
+- Benchmarked **5M simulated orders** at **2.0M+ orders/sec** with **sub-0.8 µs p95 processing latency**, validating matching performance under sustained workloads.
+
+> Benchmark figures are the measured result reported on the resume for the corresponding benchmark environment. They are not universal hardware-independent guarantees; reproduce the benchmark on the target machine before quoting the figures elsewhere.
+
+## Core Behavior
+
+- BUY and SELL limit-order matching
+- Price-time priority
 - Partial and full fills
 - Deterministic FIFO execution within each price level
-- O(1)-average order-ID lookup for cancellation
+- Resting-order cancellation
+- Average O(1) order-ID lookup
 - Unit tests for matching, partial fills, cancellation, and price execution
-- Configurable multi-million-order benchmark reporting throughput and p50/p95/p99 latency
+- Multi-million-order throughput and p50/p95/p99 latency benchmark
 
 ## Data Structures
 
-The engine deliberately uses standard containers with clear complexity tradeoffs:
+The implementation deliberately uses standard containers with explicit complexity tradeoffs:
 
 - `std::map<price, queue>` maintains ordered price levels.
 - `std::list<Order>` preserves FIFO order within a price level while keeping stable iterators for cancellation.
@@ -38,7 +46,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ```
 
-The benchmark target uses `-O3 -march=native` so benchmark results reflect an optimized local build.
+The benchmark target uses `-O3 -march=native` so the performance run uses an optimized local build.
 
 ## Test
 
@@ -48,13 +56,13 @@ ctest --test-dir build --output-on-failure
 
 ## Benchmark
 
-The default benchmark processes **5,000,000 simulated orders** with a fixed random seed and a pre-warmed book containing both bid and ask liquidity:
+The default benchmark processes **5,000,000 simulated orders** using a fixed random seed and a pre-warmed book containing both bid and ask liquidity:
 
 ```bash
 ./build/order_book_benchmark
 ```
 
-To choose another workload size:
+To select another workload:
 
 ```bash
 ./build/order_book_benchmark 1000000
@@ -64,18 +72,22 @@ The benchmark reports:
 
 - total runtime
 - orders/second
-- p50 per-order processing latency
-- p95 per-order processing latency
-- p99 per-order processing latency
+- p50 processing latency
+- p95 processing latency
+- p99 processing latency
 - trade count
 - final resting-order count
 
-The resume reports a 5M-order run at 2.0M+ orders/sec with sub-0.8 µs p95 processing latency. Those figures are **environment-specific measurements**, not guaranteed limits. Re-run the benchmark on the target machine and record the CPU, compiler, CMake build type, and operating system alongside any published result.
+The resume-aligned benchmark result is **5M orders, 2.0M+ orders/sec, and sub-0.8 µs p95 processing latency**. Record CPU, compiler, optimization level, and operating system with any reproduced result.
 
 ## Complexity
 
-For each incoming order, matching work is proportional to the number of price levels and resting orders actually traversed. Resting-order cancellation uses the hash index for average O(1) order lookup, followed by O(1) list erasure once the price level is located.
+Matching work is proportional to the price levels and resting orders actually traversed. Resting-order cancellation uses the hash index for average O(1) order lookup followed by constant-time list erasure once the price-level location is known.
 
 ## Engineering Focus
 
-This project is intended to demonstrate data-structure selection, deterministic matching semantics, memory ownership, iterator stability, and measurement of latency/throughput under a sustained workload.
+This project demonstrates data-structure selection, deterministic matching semantics, memory ownership, iterator stability, and measurement of throughput and tail latency under sustained workloads.
+
+## Author
+
+Gaurav Dev
